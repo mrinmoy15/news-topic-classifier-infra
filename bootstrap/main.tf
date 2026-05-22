@@ -96,3 +96,33 @@ resource "google_project_iam_member" "github_actions_iam_admin" {
   role    = "roles/resourcemanager.projectIamAdmin"
   member  = "serviceAccount:${google_service_account.github_actions.email}"
 }
+
+# ── Terraform State Buckets ───────────────────────────
+resource "google_storage_bucket" "terraform_state" {
+  for_each = toset(local.projects)
+
+  project       = each.value
+  name          = "${each.value}-terraform-state"
+  location      = "US"
+  force_destroy = false
+
+  versioning {
+    enabled = true
+  }
+
+  uniform_bucket_level_access = true
+
+  labels = {
+    purpose    = "terraform-state"
+    managed_by = "terraform"
+  }
+}
+
+# ── Grant GitHub Actions SA access to state buckets ───
+resource "google_storage_bucket_iam_member" "terraform_state_access" {
+  for_each = toset(local.projects)
+
+  bucket = google_storage_bucket.terraform_state[each.value].name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.github_actions.email}"
+}
