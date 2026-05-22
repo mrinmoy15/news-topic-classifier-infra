@@ -22,3 +22,8 @@ output "vertex_ai_sa_email" {
   description = "Vertex AI service account email"
   value       = module.vertex_ai.service_account_email
 }
+
+output "hf_token_secret_id" {
+  description = "HuggingFace token secret ID"
+  value       = module.secret_manager.hf_token_secret_id
+}

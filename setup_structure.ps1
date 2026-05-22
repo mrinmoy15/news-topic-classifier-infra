@@ -7,6 +7,9 @@ $dirs = @(
     "modules/cloud_storage",
     "modules/artifact_registry",
     "modules/vertex_ai",
+    "modules/secret_manager",     
+    "modules/cloud_run",         
+    "modules/cloud_scheduler",
     "environments/dev",
     "environments/pp",
     "environments/prd",
@@ -28,7 +31,15 @@ $bootstrapFiles = @(
 )
 
 # ── Module files ──────────────────────────────────────
-$modules = @("bigquery", "cloud_storage", "artifact_registry", "vertex_ai")
+$modules = @(
+    "bigquery", 
+    "cloud_storage", 
+    "artifact_registry", 
+    "secret_manager",
+    "cloud_run",
+    "cloud_scheduler",
+    "vertex_ai"
+)
 $moduleFiles = @()
 foreach ($module in $modules) {
     $moduleFiles += "modules/$module/main.tf"

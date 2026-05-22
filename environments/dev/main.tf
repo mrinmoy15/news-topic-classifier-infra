@@ -22,3 +22,10 @@ module "vertex_ai" {
   project_id  = var.project_id
   environment = "dev"
 }
+
+module "secret_manager" {
+  source             = "../../modules/secret_manager"
+  project_id         = var.project_id
+  environment        = "dev"
+  vertex_ai_sa_email = module.vertex_ai.service_account_email
+}
