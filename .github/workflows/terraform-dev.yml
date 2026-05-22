@@ -58,16 +58,25 @@ jobs:
 
       # ── Terraform Plan ────────────────────────────────
       - name: Terraform Plan
+        id: plan
         working-directory: ${{ env.WORKING_DIR }}
         run: terraform plan -out=tfplan
         env:
-          TF_VAR_project_id: ${{ vars.DEV_PROJECT_ID }}
+            TF_VAR_project_id: ${{ vars.DEV_PROJECT_ID }}
+
+      - name: Terraform Apply
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform apply tfplan
+        env:
+          TF_VAR_project_id: ${{ vars.DEV_PROJECT_ID }}  # ◄── Add this
 
       # ── Post Plan to PR ───────────────────────────────
       - name: Post Plan to PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const output = `### Terraform Plan — Dev 🌍
             \`\`\`
