@@ -53,6 +53,7 @@ foreach ($env in @("dev", "pp", "prd")) {
     $envFiles += "environments/$env/main.tf"
     $envFiles += "environments/$env/variables.tf"
     $envFiles += "environments/$env/outputs.tf"
+    $envFiles += "environments/$env/backend.tf"
 }
 
 # ── GitHub Actions workflows ──────────────────────────
