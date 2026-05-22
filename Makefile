@@ -1,5 +1,7 @@
 # Variables
 ENVS := dev pp prd
+GITHUB_ORG  := mrinmoy15
+GITHUB_REPO := news-topic-classifier-infra
 
 # Bootstrap (Run Once Manually)
 init-bootstrap:
@@ -10,6 +12,19 @@ plan-bootstrap:
 
 apply-bootstrap:
 	cd bootstrap && terraform apply tfplan
+
+bootstrap-secrets:
+	@echo "📦 Setting GitHub Actions secrets..."
+	gh secret set WIF_PROVIDER \
+		--body "$$(cd bootstrap && terraform output -raw workload_identity_provider)" \
+		--repo $(GITHUB_ORG)/$(GITHUB_REPO)
+	gh secret set SA_EMAIL \
+		--body "$$(cd bootstrap && terraform output -raw service_account_email)" \
+		--repo $(GITHUB_ORG)/$(GITHUB_REPO)
+	@echo "✅ GitHub secrets set successfully!"
+
+bootstrap-all: init-bootstrap plan-bootstrap apply-bootstrap bootstrap-secrets
+	@echo "🎉 Bootstrap complete!"
 
 destroy-bootstrap:
 	cd bootstrap && terraform destroy
@@ -83,6 +98,8 @@ help:
 	@echo "    make init-bootstrap    Initialize bootstrap"
 	@echo "    make plan-bootstrap    Plan bootstrap"
 	@echo "    make apply-bootstrap   Apply bootstrap"
+	@echo "    make bootstrap-secrets Store the necessary secrets in the github settings"
+	@echo "    make bootstrap-all     init plan apply and secrets--all run at once"
 	@echo ""
 	@echo "  Init:"
 	@echo "    make init-dev          Initialize dev environment"
