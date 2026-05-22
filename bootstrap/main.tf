@@ -88,3 +88,11 @@ resource "google_project_iam_member" "github_actions_permissions" {
   role    = "roles/editor"
   member  = "serviceAccount:${google_service_account.github_actions.email}"
 }
+
+resource "google_project_iam_member" "github_actions_iam_admin" {
+  for_each = toset(local.projects)
+
+  project = each.value
+  role    = "roles/resourcemanager.projectIamAdmin"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
