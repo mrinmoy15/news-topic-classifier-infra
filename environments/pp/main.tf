@@ -10,3 +10,9 @@ module "cloud_storage" {
   project_id  = var.project_id
   environment = "pp"
 }
+
+module "artifact_registry" {
+  source      = "../../modules/artifact_registry"
+  project_id  = var.project_id
+  environment = "dev"   # change per environment
+}
