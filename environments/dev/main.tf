@@ -1,6 +1,6 @@
 # News Topic Classifier - Dev Environment
 # Managed by Terraform via GitHub Actions CI/CD
-
+# this is for dev env
 
 module "bigquery" {
   source      = "../../modules/bigquery"
