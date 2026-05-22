@@ -126,3 +126,11 @@ resource "google_storage_bucket_iam_member" "terraform_state_access" {
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.github_actions.email}"
 }
+
+resource "google_project_iam_member" "github_actions_secret_admin" {
+  for_each = toset(local.projects)
+
+  project = each.value
+  role    = "roles/secretmanager.admin"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
