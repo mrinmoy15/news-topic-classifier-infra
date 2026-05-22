@@ -17,3 +17,8 @@ output "repository_url" {
   description = "Artifact Registry repository URL"
   value       = module.artifact_registry.repository_url
 }
+
+output "vertex_ai_sa_email" {
+  description = "Vertex AI service account email"
+  value       = module.vertex_ai.service_account_email
+}

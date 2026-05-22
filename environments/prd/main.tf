@@ -14,5 +14,11 @@ module "cloud_storage" {
 module "artifact_registry" {
   source      = "../../modules/artifact_registry"
   project_id  = var.project_id
-  environment = "dev"   # change per environment
+  environment = "prd"
+}
+
+module "vertex_ai" {
+  source      = "../../modules/vertex_ai"
+  project_id  = var.project_id
+  environment = "prd"
 }

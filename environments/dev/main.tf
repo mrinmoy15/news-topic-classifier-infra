@@ -16,3 +16,9 @@ module "artifact_registry" {
   project_id  = var.project_id
   environment = "dev"   # change per environment
 }
+
+module "vertex_ai" {
+  source      = "../../modules/vertex_ai"
+  project_id  = var.project_id
+  environment = "dev"
+}
