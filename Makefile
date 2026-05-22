@@ -1,9 +1,9 @@
-# Variables
+# ── Variables ─────────────────────────────────────────
 ENVS := dev pp prd
 GITHUB_ORG  := mrinmoy15
 GITHUB_REPO := news-topic-classifier-infra
 
-# Bootstrap (Run Once Manually)
+# ── Bootstrap (Run Once Manually) ────────────────────
 init-bootstrap:
 	cd bootstrap && terraform init
 
@@ -14,22 +14,15 @@ apply-bootstrap:
 	cd bootstrap && terraform apply tfplan
 
 bootstrap-secrets:
-	@echo "📦 Setting GitHub Actions secrets..."
-	gh secret set WIF_PROVIDER \
-		--body "$$(cd bootstrap && terraform output -raw workload_identity_provider)" \
-		--repo $(GITHUB_ORG)/$(GITHUB_REPO)
-	gh secret set SA_EMAIL \
-		--body "$$(cd bootstrap && terraform output -raw service_account_email)" \
-		--repo $(GITHUB_ORG)/$(GITHUB_REPO)
-	@echo "✅ GitHub secrets set successfully!"
+	powershell -ExecutionPolicy Bypass -File set_secrets.ps1
 
 bootstrap-all: init-bootstrap plan-bootstrap apply-bootstrap bootstrap-secrets
-	@echo "🎉 Bootstrap complete!"
+	@cmd /c echo 🎉 Bootstrap complete!
 
 destroy-bootstrap:
 	cd bootstrap && terraform destroy
 
-# Init
+# ── Init ──────────────────────────────────────────────
 init-dev:
 	cd environments/dev && terraform init
 
@@ -46,7 +39,7 @@ init-all:
 		echo "✅ $$env initialized"; \
 	done
 
-# Plan
+# ── Plan ──────────────────────────────────────────────
 plan-dev:
 	cd environments/dev && terraform plan -out=tfplan
 
@@ -56,7 +49,7 @@ plan-pp:
 plan-prd:
 	cd environments/prd && terraform plan -out=tfplan
 
-# Apply
+# ── Apply ─────────────────────────────────────────────
 apply-dev:
 	cd environments/dev && terraform apply tfplan
 
@@ -66,7 +59,7 @@ apply-pp:
 apply-prd:
 	cd environments/prd && terraform apply tfplan
 
-# Destroy
+# ── Destroy ───────────────────────────────────────────
 destroy-dev:
 	cd environments/dev && terraform destroy
 
@@ -76,7 +69,7 @@ destroy-pp:
 destroy-prd:
 	cd environments/prd && terraform destroy
 
-# Format & Validate
+# ── Format & Validate ─────────────────────────────────
 fmt:
 	terraform fmt -recursive
 
@@ -89,47 +82,50 @@ validate-pp:
 validate-prd:
 	cd environments/prd && terraform validate
 
-# Help
+# ── Help ──────────────────────────────────────────────
 help:
-	@echo ""
-	@echo "Available commands:"
-	@echo ""
-	@echo "  Bootstrap (Run Once):"
-	@echo "    make init-bootstrap    Initialize bootstrap"
-	@echo "    make plan-bootstrap    Plan bootstrap"
-	@echo "    make apply-bootstrap   Apply bootstrap"
-	@echo "    make bootstrap-secrets Store the necessary secrets in the github settings"
-	@echo "    make bootstrap-all     init plan apply and secrets--all run at once"
-	@echo ""
-	@echo "  Init:"
-	@echo "    make init-dev          Initialize dev environment"
-	@echo "    make init-pp           Initialize pp environment"
-	@echo "    make init-prd          Initialize prd environment"
-	@echo "    make init-all          Initialize all environments"
-	@echo ""
-	@echo "  Plan:"
-	@echo "    make plan-dev          Plan dev (saves to tfplan)"
-	@echo "    make plan-pp           Plan pp  (saves to tfplan)"
-	@echo "    make plan-prd          Plan prd (saves to tfplan)"
-	@echo ""
-	@echo "  Apply:"
-	@echo "    make apply-dev         Apply saved tfplan for dev"
-	@echo "    make apply-pp          Apply saved tfplan for pp"
-	@echo "    make apply-prd         Apply saved tfplan for prd"
-	@echo ""
-	@echo "  Destroy:"
-	@echo "    make destroy-dev       Destroy dev environment"
-	@echo "    make destroy-pp        Destroy pp environment"
-	@echo "    make destroy-prd       Destroy prd environment"
-	@echo ""
-	@echo "  Utils:"
-	@echo "    make fmt               Format all Terraform files"
-	@echo "    make validate-dev      Validate dev environment"
-	@echo "    make validate-pp       Validate pp environment"
-	@echo "    make validate-prd      Validate prd environment"
-	@echo ""
+	@cmd /c echo.
+	@cmd /c echo Available commands:
+	@cmd /c echo.
+	@cmd /c echo   Bootstrap:
+	@cmd /c echo     make init-bootstrap      Initialize bootstrap
+	@cmd /c echo     make plan-bootstrap      Plan bootstrap
+	@cmd /c echo     make apply-bootstrap     Apply bootstrap
+	@cmd /c echo     make bootstrap-secrets   Set GitHub secrets
+	@cmd /c echo     make bootstrap-all       Run full bootstrap
+	@cmd /c echo     make destroy-bootstrap   Destroy bootstrap
+	@cmd /c echo.
+	@cmd /c echo   Init:
+	@cmd /c echo     make init-dev            Initialize dev
+	@cmd /c echo     make init-pp             Initialize pp
+	@cmd /c echo     make init-prd            Initialize prd
+	@cmd /c echo     make init-all            Initialize all
+	@cmd /c echo.
+	@cmd /c echo   Plan:
+	@cmd /c echo     make plan-dev            Plan dev
+	@cmd /c echo     make plan-pp             Plan pp
+	@cmd /c echo     make plan-prd            Plan prd
+	@cmd /c echo.
+	@cmd /c echo   Apply:
+	@cmd /c echo     make apply-dev           Apply dev
+	@cmd /c echo     make apply-pp            Apply pp
+	@cmd /c echo     make apply-prd           Apply prd
+	@cmd /c echo.
+	@cmd /c echo   Destroy:
+	@cmd /c echo     make destroy-dev         Destroy dev
+	@cmd /c echo     make destroy-pp          Destroy pp
+	@cmd /c echo     make destroy-prd         Destroy prd
+	@cmd /c echo.
+	@cmd /c echo   Utils:
+	@cmd /c echo     make fmt                 Format Terraform files
+	@cmd /c echo     make validate-dev        Validate dev
+	@cmd /c echo     make validate-pp         Validate pp
+	@cmd /c echo     make validate-prd        Validate prd
+	@cmd /c echo.
 
-.PHONY: init-bootstrap plan-bootstrap apply-bootstrap destroy-bootstrap \
+# ── Phony Targets ─────────────────────────────────────
+.PHONY: init-bootstrap plan-bootstrap apply-bootstrap \
+		bootstrap-secrets bootstrap-all destroy-bootstrap \
 		init-dev init-pp init-prd init-all \
 		plan-dev plan-pp plan-prd \
 		apply-dev apply-pp apply-prd \

@@ -39,6 +39,7 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.SA_EMAIL }}
+          token_format: 'access_token'
 
       # ── Setup Terraform ───────────────────────────────
       - name: Setup Terraform

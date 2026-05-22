@@ -68,7 +68,7 @@ $rootFiles = @(
     "variables.tf",
     "outputs.tf",
     "Makefile",
-    "setup_structure.ps1",
+    "set_secrets.ps1",
     ".gitignore",
     "README.md"
 )

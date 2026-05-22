@@ -37,6 +37,7 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.SA_EMAIL }}
+          token_format: 'access_token'
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -62,7 +63,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `### Terraform Plan — Dev 🌍
+            const output = `### Terraform Plan — Prod 🌍
             \`\`\`
             ${{ steps.plan.outputs.stdout }}
             \`\`\``;
