@@ -21,17 +21,7 @@ bootstrap-secrets:
 	gh secret set SA_EMAIL \
 		--body "$$(cd bootstrap && terraform output -raw service_account_email)" \
 		--repo $(GITHUB_ORG)/$(GITHUB_REPO)
-	@echo "📦 Setting GitHub Actions variables..."
-	gh variable set DEV_PROJECT_ID \
-		--body "cs-cdwp-data-dev2188" \
-		--repo $(GITHUB_ORG)/$(GITHUB_REPO)
-	gh variable set PP_PROJECT_ID \
-		--body "cs-cdwp-data-pp2188" \
-		--repo $(GITHUB_ORG)/$(GITHUB_REPO)
-	gh variable set PRD_PROJECT_ID \
-		--body "cs-cdwp-data-prd2188" \
-		--repo $(GITHUB_ORG)/$(GITHUB_REPO)
-	@echo "✅ GitHub secrets and variables set successfully!"
+	@echo "✅ GitHub secrets set successfully!"
 
 bootstrap-all: init-bootstrap plan-bootstrap apply-bootstrap bootstrap-secrets
 	@echo "🎉 Bootstrap complete!"

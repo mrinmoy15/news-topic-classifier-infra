@@ -55,8 +55,6 @@ jobs:
         id: plan
         working-directory: ${{ env.WORKING_DIR }}
         run: terraform plan -out=tfplan
-        env:
-          TF_VAR_project_id: ${{ vars.PP_PROJECT_ID }}
 
       - name: Post Plan to PR
         if: github.event_name == 'pull_request'
@@ -79,5 +77,3 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         working-directory: ${{ env.WORKING_DIR }}
         run: terraform apply tfplan
-        env:
-          TF_VAR_project_id: ${{ vars.PP_PROJECT_ID }}

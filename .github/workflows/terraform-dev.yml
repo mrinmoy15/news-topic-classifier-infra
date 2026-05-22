@@ -68,8 +68,6 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
         working-directory: ${{ env.WORKING_DIR }}
         run: terraform apply tfplan
-        env:
-          TF_VAR_project_id: ${{ vars.DEV_PROJECT_ID }}  # ◄── Add this
 
       # ── Post Plan to PR ───────────────────────────────
       - name: Post Plan to PR
@@ -94,5 +92,3 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
         working-directory: ${{ env.WORKING_DIR }}
         run: terraform apply tfplan
-        env:
-          TF_VAR_project_id: ${{ vars.DEV_PROJECT_ID }}
