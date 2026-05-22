@@ -1,0 +1,20 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+crash.log
+override.tf
+tfplan
+
+# Sensitive variables - NEVER commit these
+*.tfvars
+!*.tfvars.example
+
+# GCP credentials
+*.json
+service-account*.json
+
+# OS
+.DS_Store
+Thumbs.db
