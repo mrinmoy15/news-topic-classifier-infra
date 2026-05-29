@@ -27,3 +27,18 @@ output "hf_token_secret_id" {
   description = "HuggingFace token secret ID"
   value       = module.secret_manager.hf_token_secret_id
 }
+
+output "mlflow_tracking_url" {
+  description = "MLflow tracking server URL"
+  value       = module.cloud_run.service_url
+}
+
+output "mlflow_db_instance" {
+  description = "Cloud SQL instance connection name for MLflow"
+  value       = module.cloud_sql.instance_connection_name
+}
+
+output "mlflow_sa_email" {
+  description = "MLflow Cloud Run service account email"
+  value       = module.cloud_run.service_account_email
+}

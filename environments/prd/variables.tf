@@ -3,3 +3,8 @@ variable "project_id" {
   type        = string
   default     = "cs-cdwp-data-prd2188"
 }
+
+variable "mlflow_image" {
+  description = "Docker image URI for the MLflow tracking server (must include psycopg2)"
+  type        = string
+}

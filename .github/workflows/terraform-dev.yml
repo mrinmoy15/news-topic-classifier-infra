@@ -26,15 +26,15 @@ jobs:
 
     permissions:
       contents: read
-      id-token: write      # ◄── Required for WIF
-      pull-requests: write # ◄── Required to post plan comments
+      id-token: write      
+      pull-requests: write 
 
     steps:
-      # ── Checkout code ────────────────────────────────
+      # Checkout code
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
-      # ── Authenticate to GCP via WIF ──────────────────
+      # Authenticate to GCP via WIF
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2.1.10
         with:
@@ -42,7 +42,7 @@ jobs:
           service_account: ${{ secrets.SA_EMAIL }}
           token_format: 'access_token'
 
-      # ── Setup Terraform ───────────────────────────────
+      # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3.1.2
         with:
@@ -65,13 +65,14 @@ jobs:
         run: terraform plan -out=tfplan
         env:
             TF_VAR_project_id: ${{ vars.DEV_PROJECT_ID }}
+            TF_VAR_mlflow_image: ${{ vars.DEV_MLFLOW_IMAGE }}
 
       - name: Terraform Apply
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
         working-directory: ${{ env.WORKING_DIR }}
         run: terraform apply tfplan
 
-      # ── Post Plan to PR ───────────────────────────────
+      # Post Plan to PR
       - name: Post Plan to PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7.0.1
@@ -89,7 +90,7 @@ jobs:
               body: output
             })
 
-      # ── Terraform Apply ───────────────────────────────
+      # Terraform Apply
       - name: Terraform Apply
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
         working-directory: ${{ env.WORKING_DIR }}

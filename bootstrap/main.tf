@@ -15,9 +15,10 @@ locals {
     "storage.googleapis.com",
     "artifactregistry.googleapis.com",
     "aiplatform.googleapis.com",
-    "run.googleapis.com",             
+    "run.googleapis.com",
     "cloudscheduler.googleapis.com",
-    "secretmanager.googleapis.com"
+    "secretmanager.googleapis.com",
+    "sqladmin.googleapis.com"
   ]
 
   project_api_pairs = {
