@@ -70,7 +70,7 @@ resource "google_cloud_run_v2_service" "mlflow" {
       resources {
         limits = {
           cpu    = "1"
-          memory = "512Mi"
+          memory = "1Gi"
         }
       }
     }
@@ -95,4 +95,14 @@ resource "google_cloud_run_v2_service_iam_member" "vertex_ai_invoker" {
   name     = google_cloud_run_v2_service.mlflow.name
   role     = "roles/run.invoker"
   member   = "serviceAccount:${var.vertex_ai_sa_email}"
+}
+
+resource "google_cloud_run_v2_service_iam_member" "additional_invokers" {
+  for_each = toset(var.additional_invokers)
+
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.mlflow.name
+  role     = "roles/run.invoker"
+  member   = each.value
 }

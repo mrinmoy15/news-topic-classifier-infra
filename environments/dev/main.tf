@@ -52,4 +52,5 @@ module "cloud_run" {
   db_user                      = module.cloud_sql.user_name
   db_password_secret_id        = module.cloud_sql.password_secret_id
   vertex_ai_sa_email           = module.vertex_ai.service_account_email
+  additional_invokers          = ["user:mrinmoybhuyan007@gmail.com"]
 }

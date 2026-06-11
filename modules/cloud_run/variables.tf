@@ -48,3 +48,9 @@ variable "vertex_ai_sa_email" {
   description = "Vertex AI service account email granted run.invoker on the MLflow service"
   type        = string
 }
+
+variable "additional_invokers" {
+  description = "Extra principals granted run.invoker (e.g. user:you@gmail.com for UI access)"
+  type        = list(string)
+  default     = []
+}

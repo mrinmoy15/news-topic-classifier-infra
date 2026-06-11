@@ -70,6 +70,20 @@ init-all:
 	make init-pp
 	make init-prd
 
+upgrade-dev:
+	cd environments/dev && terraform init -upgrade
+
+upgrade-pp:
+	cd environments/pp && terraform init -upgrade
+
+upgrade-prd:
+	cd environments/prd && terraform init -upgrade
+
+upgrade-all:
+	make upgrade-dev
+	make upgrade-pp
+	make upgrade-prd
+
 # ── Plan ──────────────────────────────────────────────
 plan-dev:
 	cd environments/dev && terraform plan -out=tfplan

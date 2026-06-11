@@ -9,10 +9,10 @@ variable "github_org" {
   type        = string
 }
 
-variable "github_repo" {
-  description = "The GitHub repo name"
-  type        = string
-  default     = "news-topic-classifier-infra"
+variable "github_repos" {
+  description = "GitHub repo names allowed to authenticate via WIF"
+  type        = list(string)
+  default     = ["news-topic-classifier-infra", "news-topic-classifier"]
 }
 
 variable "dev_project_id" {

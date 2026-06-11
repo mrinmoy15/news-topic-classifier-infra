@@ -57,8 +57,6 @@ jobs:
         id: plan
         working-directory: ${{ env.WORKING_DIR }}
         run: terraform plan -out=tfplan
-        env:
-          TF_VAR_mlflow_image: ${{ vars.PP_MLFLOW_IMAGE }}
 
       - name: Post Plan to PR
         if: github.event_name == 'pull_request'

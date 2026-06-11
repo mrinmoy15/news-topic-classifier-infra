@@ -67,7 +67,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
     "attribute.repository" = "assertion.repository"
   }
 
-  attribute_condition = "assertion.repository == '${var.github_org}/${var.github_repo}'"
+  attribute_condition = "assertion.repository in ['${join("', '", [for r in var.github_repos : "${var.github_org}/${r}"])}']"
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
@@ -76,9 +76,11 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 
 # ── Allow GitHub Actions to impersonate Service Account
 resource "google_service_account_iam_member" "github_wif" {
+  for_each = toset(var.github_repos)
+
   service_account_id = google_service_account.github_actions.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/${var.github_repo}"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/${each.value}"
 }
 
 # ── Grant Service Account permissions on all projects ─
@@ -134,4 +136,28 @@ resource "google_project_iam_member" "github_actions_secret_admin" {
   project = each.value
   role    = "roles/secretmanager.admin"
   member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_project_iam_member" "github_actions_ar_writer" {
+  for_each = toset(local.projects)
+
+  project = each.value
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_project_iam_member" "github_actions_aiplatform_user" {
+  for_each = toset(local.projects)
+
+  project = each.value
+  role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_project_iam_member" "ml_repo_ar_writer" {
+  for_each = toset(local.projects)
+
+  project = each.value
+  role    = "roles/artifactregistry.writer"
+  member  = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/news-topic-classifier"
 }

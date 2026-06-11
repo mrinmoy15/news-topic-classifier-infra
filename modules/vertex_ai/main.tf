@@ -20,3 +20,9 @@ resource "google_project_iam_member" "vertex_ai_sa_permissions" {
   role    = each.value
   member  = "serviceAccount:${google_service_account.vertex_ai_sa.email}"
 }
+
+resource "google_service_account_iam_member" "vertex_ai_sa_token_creator" {
+  service_account_id = google_service_account.vertex_ai_sa.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "serviceAccount:${google_service_account.vertex_ai_sa.email}"
+}

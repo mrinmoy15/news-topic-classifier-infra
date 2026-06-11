@@ -50,32 +50,39 @@ Cloud SQL (PostgreSQL)    GCS (artifacts)
 
 ## Deployment Order
 
-Run these steps once before the first `terraform apply`:
+```
+Bootstrap  ──────────────────────────────────────────────────────────►  creates Artifact Registry repos
+                                                                                      │
+                                                                                      ▼
+                                                                         Push MLflow Docker image
+                                                                         (image must exist in registry)
+                                                                                      │
+                                                                                      ▼
+                                                                         terraform apply (all envs)
+                                                                         Cloud Run pulls image from registry
+```
+
+**Why this exact order matters:**
+- Bootstrap creates the Artifact Registry repos — you can't push an image before they exist
+- The MLflow image must be in the registry before `terraform apply` — Cloud Run will fail to deploy if the image is missing
+- Environment apply wires everything together (Cloud Run, Cloud SQL, IAM, GCS) using the image and repos created above
+
+---
 
 ### 1. Bootstrap (one-time)
 ```bash
 make apply-bootstrap
 ```
-Creates the GitHub Actions SA, Workload Identity Federation, Terraform state buckets, and enables all required APIs across all three projects.
+Creates the GitHub Actions SA, Workload Identity Federation, Terraform state buckets, Artifact Registry repos, and enables all required APIs across all three projects.
 
 ### 2. Build and push the MLflow Docker image
 ```bash
 make mlflow-auth        # configure Docker to push to Artifact Registry
 make mlflow-push-all    # build once, push to dev / pp / prd registries
 ```
+Builds `docker/mlflow/Dockerfile` (MLflow + psycopg2 + GCS support) and pushes to each project's Artifact Registry. Must happen after bootstrap so the repos exist.
 
-### 3. Set GitHub Actions variables
-
-Go to **GitHub repo → Settings → Secrets and variables → Actions → Variables** and add:
-
-| Variable | Value |
-|---|---|
-| `DEV_MLFLOW_IMAGE` | `us-central1-docker.pkg.dev/cs-cdwp-data-dev2188/news-topic-classifier/mlflow:latest` |
-| `PP_MLFLOW_IMAGE`  | `us-central1-docker.pkg.dev/cs-cdwp-data-pp2188/news-topic-classifier/mlflow:latest`  |
-| `PRD_MLFLOW_IMAGE` | `us-central1-docker.pkg.dev/cs-cdwp-data-prd2188/news-topic-classifier/mlflow:latest` |
-| `DEV_PROJECT_ID`   | `cs-cdwp-data-dev2188` |
-
-### 4. Apply environments in order
+### 3. Apply environments in order
 ```bash
 make init-all
 
@@ -83,6 +90,7 @@ make plan-dev && make apply-dev
 make plan-pp  && make apply-pp
 make plan-prd && make apply-prd
 ```
+Creates Cloud SQL, Cloud Run (MLflow), GCS buckets, BigQuery, Secret Manager secrets, and all IAM bindings. Cloud Run pulls the MLflow image pushed in step 2.
 
 Get the MLflow URL for each environment after apply:
 ```bash
@@ -237,6 +245,65 @@ The MLflow image is built from `docker/mlflow/Dockerfile` and includes:
 | `make mlflow-push-all` | Push to all three registries |
 
 To upgrade MLflow, edit the version pin in `docker/mlflow/Dockerfile` and re-run `make mlflow-push-all`.
+
+---
+
+## Data & Artifact Storage Flow
+
+```mermaid
+flowchart TD
+    raw(["Raw News Articles - BBC Dataset"])
+    data_bucket[("model-data\nTraining splits & processed data")]
+    artifact_bucket[("model-artifacts\nSaved models & MLflow artifacts")]
+    mlflow["MLflow Tracking Server\nCloud Run"]
+    sql[("Cloud SQL - PostgreSQL\nRun metadata")]
+
+    raw --> data_bucket
+
+    data_bucket --> extract
+
+    subgraph pipeline["Vertex AI Pipeline"]
+        direction TB
+        extract["extract-component"] --> preprocess["preprocess-component"] --> train["train-component"] --> evaluate["evaluate-component"]
+    end
+
+    train -->|saved model| artifact_bucket
+    evaluate -->|evaluation results| artifact_bucket
+    mlflow -->|experiment artifacts| artifact_bucket
+    mlflow -->|run metadata| sql
+
+    click data_bucket "https://console.cloud.google.com/storage/browser/cs-cdwp-data-dev2188-model-data" "Open in GCP Console"
+    click artifact_bucket "https://console.cloud.google.com/storage/browser/cs-cdwp-data-dev2188-model-artifacts" "Open in GCP Console"
+```
+
+> Diagram links open the **dev** bucket. Use the table below to navigate per environment.
+
+### Bucket Directory
+
+| Environment | Purpose | Bucket | GCP Console |
+|---|---|---|---|
+| dev | Training Data   | `cs-cdwp-data-dev2188-model-data`      | [open ↗](https://console.cloud.google.com/storage/browser/cs-cdwp-data-dev2188-model-data) |
+| dev | Model Artifacts | `cs-cdwp-data-dev2188-model-artifacts` | [open ↗](https://console.cloud.google.com/storage/browser/cs-cdwp-data-dev2188-model-artifacts) |
+| pp  | Training Data   | `cs-cdwp-data-pp2188-model-data`       | [open ↗](https://console.cloud.google.com/storage/browser/cs-cdwp-data-pp2188-model-data) |
+| pp  | Model Artifacts | `cs-cdwp-data-pp2188-model-artifacts`  | [open ↗](https://console.cloud.google.com/storage/browser/cs-cdwp-data-pp2188-model-artifacts) |
+| prd | Training Data   | `cs-cdwp-data-prd2188-model-data`      | [open ↗](https://console.cloud.google.com/storage/browser/cs-cdwp-data-prd2188-model-data) |
+| prd | Model Artifacts | `cs-cdwp-data-prd2188-model-artifacts` | [open ↗](https://console.cloud.google.com/storage/browser/cs-cdwp-data-prd2188-model-artifacts) |
+
+MLflow artifacts are stored under `gs://{project_id}-model-artifacts/mlflow-artifacts/`.
+
+---
+
+## MLflow Tracking URLs
+
+Retrieved after each environment's `terraform apply` via `terraform output mlflow_tracking_url`.
+
+| Environment | Project | MLflow Tracking URL |
+|---|---|---|
+| dev | `cs-cdwp-data-dev2188` | `https://mlflow-tracking-server-eeh43tst7q-uc.a.run.app` |
+| pp  | `cs-cdwp-data-pp2188`  | `https://mlflow-tracking-server-nityigrfzq-uc.a.run.app` |
+| prd | `cs-cdwp-data-prd2188` | `https://mlflow-tracking-server-wngg5g6m6q-uc.a.run.app` |
+
+> URLs contain a GCP-assigned hash and are permanent for the lifetime of the Cloud Run service. Update this table after each environment is first applied.
 
 ---
 
